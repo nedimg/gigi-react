@@ -1,0 +1,126 @@
+import React from "react";
+import styled from "styled-components";
+
+import * as Api from "../helpers/Api";
+import Loader from "./Loader";
+
+class Header extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      firstName: "",
+      lastName: "",
+      isLoading: false,
+      isSubmitting: false
+    };
+
+    this.firstNameChangeHandler = this.handleFirstNameChange.bind(this);
+    this.lastNameChangeHandler = this.handleLastNameChange.bind(this);
+    this.saveClickHandler = this.handleSaveClick.bind(this);
+  }
+
+  componentWillMount() {
+    this.setState({ isLoading: true });
+
+    Api.loadUser().then(user => {
+      this.setState({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isLoading: false
+      });
+    });
+  }
+
+  handleFirstNameChange(e) {
+    this.setState({ firstName: e.target.value });
+  }
+
+  handleLastNameChange(e) {
+    this.setState({ lastName: e.target.value });
+  }
+  handleSaveClick() {
+    this.setState({ isSubmitting: true });
+    const { firstName, lastName } = this.state;
+
+    Api.saveUser({ firstName, lastName }).then(() => {
+      this.setState({ isSubmitting: false });
+      alert("Succesfully saved");
+    });
+  }
+
+  render() {
+    const { firstName, lastName, isSubmitting } = this.state;
+
+    return (
+      <Form>
+        <Avatar />
+        <Fields>
+          <h2>Edit profile</h2>
+          <label>
+            First name:
+            <input
+              type="text"
+              value={firstName}
+              onChange={this.firstNameChangeHandler}
+            />
+          </label>
+          <label>
+            Last name:
+            <input
+              type="text"
+              value={lastName}
+              onChange={this.lastNameChangeHandler}
+            />
+          </label>
+          <Actions>
+            {isSubmitting && <Loader />}
+            <button disabled={isSubmitting} onClick={this.saveClickHandler}>
+              Save
+            </button>
+          </Actions>
+        </Fields>
+      </Form>
+    );
+  }
+}
+
+export default Header;
+
+const Form = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  border-top: 1px solid silver;
+  padding-top: 20px;
+`;
+
+const Avatar = styled.div`
+  width: 175px;
+  height: 175px;
+  background-color: silver;
+  border-radius: 100%;
+  margin-right: 60px;
+`;
+
+const Fields = styled.div`
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    input {
+      margin-top: 4px;
+      padding: 6px 10px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+    }
+  }
+`;
